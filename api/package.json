@@ -1,0 +1,40 @@
+{
+  "name": "@flash-sale/api",
+  "version": "1.0.0",
+  "description": "High-throughput flash sale API server (Express)",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "PORT=${PORT:-3000} tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "PORT=${PORT:-3000} node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "stress": "node --experimental-strip-types tests/stress/runStress.ts",
+    "stress:autocannon": "node --experimental-strip-types tests/stress/autocannon.ts",
+    "typecheck": "tsc -p tsconfig.test.json"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^7.4.0",
+    "ioredis": "^5.11.1",
+    "pg": "^8.13.0",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
+    "rate-limit-redis": "^4.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "@types/pg": "^8.11.10",
+    "@types/supertest": "^6.0.2",
+    "autocannon": "^7.15.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

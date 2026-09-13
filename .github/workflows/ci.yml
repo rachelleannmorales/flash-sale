@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: typecheck + test + build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: flash
+          POSTGRES_PASSWORD: flash
+          POSTGRES_DB: flashsale
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U flash -d flashsale"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://flash:flash@127.0.0.1:5432/flashsale
+      REDIS_URL: redis://127.0.0.1:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Typecheck workspaces
+        run: npm run typecheck
+
+      - name: Test (api)
+        run: npm test
+
+      - name: Build workspaces
+        run: npm run build
+
+  docker:
+    name: docker build (smoke)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build api image
+        run: docker build -t flash-sale-api:ci ./api
+      - name: Build web image
+        run: docker build -t flash-sale-web:ci ./web
